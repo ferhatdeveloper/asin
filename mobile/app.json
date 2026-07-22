@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "RetailEX",
-    "slug": "retailex-mobile",
+    "name": "Asin",
+    "slug": "asin-mobile",
     "version": "0.1.228",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "retailex",
+    "scheme": "asinerp",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#2563eb"
+      "backgroundColor": "#0E2433"
     },
     "ios": {
       "supportsTablet": true,
@@ -21,16 +21,16 @@
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
         },
-        "NSLocationWhenInUseUsageDescription": "RetailEX teslimat kuryesi için canlı konum paylaşımı ister.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "RetailEX teslimat sırasında konum güncellemesi ister.",
-        "NSBluetoothAlwaysUsageDescription": "RetailEX BLE tartı terazisine bağlanmak için Bluetooth ister."
+        "NSLocationWhenInUseUsageDescription": "Asin teslimat kuryesi için canlı konum paylaşımı ister.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Asin teslimat sırasında konum güncellemesi ister.",
+        "NSBluetoothAlwaysUsageDescription": "Asin BLE tartı terazisine bağlanmak için Bluetooth ister."
       },
       "buildNumber": "1228"
     },
     "android": {
       "package": "app.retailex.mobile",
       "adaptiveIcon": {
-        "backgroundColor": "#2563eb",
+        "backgroundColor": "#0E2433",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"

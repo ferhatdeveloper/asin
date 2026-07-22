@@ -70,7 +70,7 @@ function normalizeZoomLevel(rawValue: unknown): number {
   return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, stepped));
 }
 
-/** Lazy chunk yüklenirken — modüle göre marka (RetailEx / RestEx / ClinicEx) */
+/** Lazy chunk yüklenirken — modüle göre satır etiketi (Retail / Rest / Clinic) */
 function ModuleLazySplash({
   productLine,
   accent,

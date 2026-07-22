@@ -54,7 +54,7 @@ export const NeonLogo: React.FC<NeonLogoProps> = ({
             className={`flex items-center gap-3 font-bold tracking-tight select-none ${className}`}
             style={{ color: 'inherit' }}
         >
-            {/* Ink → Teal geometric mark */}
+                    {/* Ink → Teal geometric mark */}
             <div className={`relative flex items-center justify-center ${iconSizes[size]}`}>
                 <div
                     className="absolute inset-0 rounded-full opacity-25 blur-[20px]"
@@ -69,7 +69,7 @@ export const NeonLogo: React.FC<NeonLogoProps> = ({
                 >
                     <defs>
                         <linearGradient id={GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#0E2433" />
+                            <stop offset="0%" stopColor="#F3F5F7" />
                             <stop offset="100%" stopColor="#1FA8A0" />
                         </linearGradient>
                         <filter id={GLOW_ID}>
@@ -85,10 +85,10 @@ export const NeonLogo: React.FC<NeonLogoProps> = ({
                     <path
                         d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z"
                         fill="none"
-                        stroke={`url(#${GRADIENT_ID})`}
+                        stroke="#1FA8A0"
                         strokeWidth="2"
                         strokeLinejoin="round"
-                        className="opacity-50"
+                        className="opacity-55"
                     />
 
                     {/* Inner "A" monogram */}
@@ -106,7 +106,7 @@ export const NeonLogo: React.FC<NeonLogoProps> = ({
                         height="28"
                         fill="#1FA8A0"
                         rx="2"
-                        className="opacity-90"
+                        className="opacity-95"
                     />
                 </svg>
             </div>

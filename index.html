@@ -180,10 +180,10 @@
   <div id="app-loader">
     <div class="logo-container">
       <div class="logo-glow"></div>
-      <svg viewBox="0 0 100 100" class="logo-svg">
+      <svg viewBox="0 0 100 100" class="logo-svg" aria-label="Asin">
         <defs>
           <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#0E2433" />
+            <stop offset="0%" stop-color="#F3F5F7" />
             <stop offset="100%" stop-color="#1FA8A0" />
           </linearGradient>
           <filter id="loaderGlow">
@@ -194,11 +194,11 @@
             </feMerge>
           </filter>
         </defs>
-        <path d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z" fill="none" stroke="url(#loaderGrad)"
-          stroke-width="2" stroke-linejoin="round" opacity="0.4" />
-        <path d="M35 35 L65 35 L65 45 L45 45 L45 55 L65 55 L65 65 L35 65 Z" fill="url(#loaderGrad)"
+        <path d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z" fill="none" stroke="#1FA8A0"
+          stroke-width="2" stroke-linejoin="round" opacity="0.55" />
+        <path d="M50 28 L72 72 H62 L56 58 H44 L38 72 H28 L50 28 Z M47 50 H53 L50 42 Z" fill="url(#loaderGrad)"
           filter="url(#loaderGlow)" class="pulse-animation" />
-        <rect x="70" y="35" width="8" height="30" fill="url(#loaderGrad)" rx="2" opacity="0.8" />
+        <rect x="74" y="38" width="6" height="28" fill="#1FA8A0" rx="2" opacity="0.95" />
       </svg>
       <div class="logo-text" id="splash-brand">
         <span class="retail" id="splash-brand-left">Asin</span><span class="ex" id="splash-brand-ex"></span>
@@ -385,7 +385,7 @@
             (isNativeApp
               ? ' İlk kurulumda 1–2 dakika bekleyip tekrar deneyin.'
               : ' Sorun sürerse Wi‑Fi üzerinden Asin bulutu ile deneyin.') +
-            '<br><br><button type="button" onclick="location.reload()" style="padding:10px 20px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;font-size:14px">Yeniden dene</button>' +
+            '<br><br><button type="button" onclick="location.reload()" style="padding:10px 20px;border:0;border-radius:8px;background:#1FA8A0;color:#fff;font-weight:700;font-size:14px">Yeniden dene</button>' +
             '</div>';
         }
       }, 700);

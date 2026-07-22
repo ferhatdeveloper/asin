@@ -9,7 +9,7 @@
   "bundle": {
     "active": true,
     "category": "DeveloperTool",
-    "publisher": "RetailEX",
+    "publisher": "Asin",
     "copyright": "",
     "targets": [
       "nsis",
@@ -92,7 +92,7 @@
         "maximized": true,
         "decorations": true,
         "resizable": true,
-        "title": "RetailEX",
+        "title": "Asin",
         "width": 1024,
         "height": 768,
         "useHttpsScheme": true
