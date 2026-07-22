@@ -23,11 +23,7 @@ fn decode_base64(s: &str) -> String {
 }
 
 fn get_config_db_path() -> PathBuf {
-    let app_dir = PathBuf::from("C:\\RetailEx");
-    if !app_dir.exists() {
-        let _ = std::fs::create_dir_all(&app_dir);
-    }
-    app_dir.join("config.db")
+    config::get_db_path()
 }
 
 fn main() -> anyhow::Result<()> {

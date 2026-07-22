@@ -1971,7 +1971,14 @@ async fn verify_license(key: String) -> Result<license::LicenseInfo, String> {
 }
 
 fn check_bootstrap_config(app: &tauri::AppHandle) {
-    let bootstrap_path = app.path().app_config_dir().unwrap_or_else(|_| std::path::PathBuf::from("C:\\RetailEx")).join("bootstrap.json");
+    let bootstrap_path = if config::is_portable_mode() {
+        config::get_app_data_dir().join("bootstrap.json")
+    } else {
+        app.path()
+            .app_config_dir()
+            .unwrap_or_else(|_| std::path::PathBuf::from(r"C:\RetailEx"))
+            .join("bootstrap.json")
+    };
     if bootstrap_path.exists() {
         if let Ok(content) = std::fs::read_to_string(&bootstrap_path) {
             if let Ok(bootstrap_config) = serde_json::from_str::<serde_json::Value>(&content) {

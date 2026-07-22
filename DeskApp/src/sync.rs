@@ -205,6 +205,9 @@ pub fn register_headless_runtime(handle: tokio::runtime::Handle) {
 }
 
 fn retail_ex_data_dir() -> PathBuf {
+    if crate::config::is_portable_mode() {
+        return crate::config::get_app_data_dir();
+    }
     #[cfg(windows)]
     {
         PathBuf::from(r"C:\ProgramData\RetailEX")
