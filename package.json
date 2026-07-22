@@ -2,7 +2,7 @@
   "name": "asin",
   "description": "Asin — Next-Gen ERP",
   "type": "module",
-  "version": "0.1.228",
+  "version": "0.1.229",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^6.1.0",

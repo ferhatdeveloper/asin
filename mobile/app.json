@@ -2,7 +2,7 @@
   "expo": {
     "name": "Asin",
     "slug": "asin-mobile",
-    "version": "0.1.228",
+    "version": "0.1.229",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -25,7 +25,7 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Asin teslimat sırasında konum güncellemesi ister.",
         "NSBluetoothAlwaysUsageDescription": "Asin BLE tartı terazisine bağlanmak için Bluetooth ister."
       },
-      "buildNumber": "1228"
+      "buildNumber": "1229"
     },
     "android": {
       "package": "app.retailex.mobile",
@@ -37,7 +37,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "usesCleartextTraffic": true,
-      "versionCode": 1228,
+      "versionCode": 1229,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
