@@ -139,27 +139,22 @@ export let LOCAL_CONFIG = {
   isConfigured: false
 };
 
-// System Settings
+// System Settings — Asin: yalnızca online + PostgREST (yerel/offline kapalı)
 export let DB_SETTINGS = {
-  activeMode: 'hybrid' as ConnectionMode,
+  activeMode: 'online' as ConnectionMode,
   systemType: 'retail' as 'retail' | 'market' | 'wms',
   // Remote tarafı DB mi yoksa PostgREST mü kullanacak?
   connectionProvider: 'rest_api' as ConnectionProvider,
   remoteRestUrl: DEFAULT_REMOTE_REST_URL as string,
   lastSync: null as string | null,
-  hybridReadPreference: 'local_first' as HybridReadPreference,
-  hybridSyncDirection: 'local_to_remote' as HybridSyncDirection,
+  hybridReadPreference: 'remote_first' as HybridReadPreference,
+  hybridSyncDirection: 'remote_to_local' as HybridSyncDirection,
   hybridSyncIntervalSec: 30,
   hybridSyncTransport: 'both' as HybridSyncTransport,
   merkezTenantCode: '' as string,
   centralWsUrl: '' as string,
   centralApiUrl: '' as string,
 };
-
-// Tauri hibrit varsayılanı: modül import anında PostgREST yerine yerel PG (store auto-load 404 önleme).
-if (IS_TAURI && DB_SETTINGS.activeMode === 'hybrid') {
-  DB_SETTINGS.connectionProvider = 'db';
-}
 
 type PgEndpointConfig = typeof LOCAL_CONFIG;
 
@@ -358,11 +353,12 @@ export function shouldUseCentralApi(): boolean {
   return Boolean(String(DB_SETTINGS.remoteRestUrl ?? '').trim());
 }
 
-/** Tauri hibrit: günlük CRUD yerel PG; merkez yalnızca senkron/RPC (shouldUseCentralApi). */
+/** Asin: yerel/hibrit kapalı — her zaman online + PostgREST. */
 function applyTauriHybridDbOverride(): void {
-  if (IS_TAURI && DB_SETTINGS.activeMode === 'hybrid') {
-    DB_SETTINGS.connectionProvider = 'db';
+  if (DB_SETTINGS.activeMode === 'offline' || DB_SETTINGS.activeMode === 'hybrid') {
+    DB_SETTINGS.activeMode = 'online';
   }
+  DB_SETTINGS.connectionProvider = 'rest_api';
 }
 
 /**
@@ -509,17 +505,17 @@ export function getCentralRemotePgConfig(): typeof REMOTE_CONFIG {
 function applyWebLocalStorageConfig(config: any): void {
   if (!config || typeof config !== 'object') return;
   const dm = config.db_mode;
-  DB_SETTINGS.activeMode =
+  // Asin: offline/hybrid → online (yerel PG kullanılmaz)
+  const rawMode =
     dm === 'online' || dm === 'offline' || dm === 'hybrid' ? (dm as ConnectionMode) : 'online';
+  DB_SETTINGS.activeMode =
+    rawMode === 'offline' || rawMode === 'hybrid' ? 'online' : rawMode;
   const rawRest =
     typeof config.remote_rest_url === 'string' ? String(config.remote_rest_url).trim() : '';
   const normalizedRest = rawRest ? normalizeStoredRemoteRestUrl(rawRest) : '';
-  // Web: PostgREST URL varsa (veya açık rest_api) köprüye düşme — eski kayıtlarda provider 'db' kalabiliyor.
-  const wantsRest =
-    config.connection_provider === 'rest_api' ||
-    (!!normalizedRest && (DB_SETTINGS.activeMode === 'online' || DB_SETTINGS.activeMode === 'hybrid'));
-  DB_SETTINGS.connectionProvider = (wantsRest ? 'rest_api' : 'db') as ConnectionProvider;
-  DB_SETTINGS.remoteRestUrl = normalizedRest || (wantsRest ? normalizeStoredRemoteRestUrl(DEFAULT_REMOTE_REST_URL) : '');
+  // Asin: her zaman PostgREST (yerel köprüye düşme)
+  DB_SETTINGS.connectionProvider = 'rest_api';
+  DB_SETTINGS.remoteRestUrl = normalizedRest || normalizeStoredRemoteRestUrl(DEFAULT_REMOTE_REST_URL);
   if (
     typeof localStorage !== 'undefined' &&
     DB_SETTINGS.remoteRestUrl &&
@@ -847,8 +843,9 @@ export async function updateConfigs(updates: {
     DB_SETTINGS = { ...DB_SETTINGS, ...next };
   }
   if (updates.erp) ERP_SETTINGS = { ...ERP_SETTINGS, ...updates.erp };
-  if (DB_SETTINGS.activeMode === 'hybrid') {
-    DB_SETTINGS.connectionProvider = IS_TAURI ? 'db' : 'rest_api';
+  // Asin: hibrit/yerel → online + rest_api
+  if (DB_SETTINGS.activeMode === 'hybrid' || DB_SETTINGS.activeMode === 'offline') {
+    DB_SETTINGS.activeMode = 'online';
   }
   applyTauriHybridDbOverride();
   alignRemoteConfigWithRestUrl();
@@ -1204,7 +1201,7 @@ function saasTenantSlugFromUrl(url: string): string {
   return parsed.kind === 'saas_single_slug' ? parsed.slug : '';
 }
 
-/** Mobil / LAN veya RetailEX bulutu PostgREST hataları için Türkçe yönlendirme metni. */
+/** Mobil / LAN veya Asin bulutu PostgREST hataları için Türkçe yönlendirme metni. */
 export function explainPostgrestConnectionError(
   url: string,
   opts?: { error?: string; httpStatus?: number; bodySnippet?: string },
@@ -1230,22 +1227,22 @@ export function explainPostgrestConnectionError(
     if (httpStatus === 404 || gatewayNotFound) {
       const kod = slug || 'kiracı_kodu';
       return (
-        `RetailEX bulutu: https://api.retailex.app/${kod} yolu bulunamadı (HTTP 404` +
+        `Asin bulutu: https://api.retailex.app/${kod} yolu bulunamadı (HTTP 404` +
         `${gatewayNotFound ? ', gateway not_found' : ''}). ` +
         `LAN Wi‑Fi / port 3002 bu mod için geçerli değildir. ` +
-        `Kiracı kodunu kontrol edin (Özbek Restoran: ozbek — berzin_com farklı firmadır). ` +
-        `Kod doğruysa sunucuda postgrest_${kod} ve retailex_api_gateway (Caddy) yeniden yayınlanmalı.`
+        `Kiracı kodunu kontrol edin. ` +
+        `Kod doğruysa sunucuda postgrest_${kod} ve API gateway yeniden yayınlanmalı.`
       );
     }
     if (httpStatus === 503) {
       return (
-        `RetailEX bulutu: kiracı API'si geçici olarak yanıt vermiyor (HTTP 503). ` +
+        `Asin bulutu: kiracı API'si geçici olarak yanıt vermiyor (HTTP 503). ` +
         `postgrest_${slug || '…'} veya veritabanı kontrol edilmeli. LAN / port 3002 ile ilgili değildir.`
       );
     }
     if (httpStatus === 406) {
       return (
-        `RetailEX bulutu: PostgREST Accept başlığı reddedildi (HTTP 406). ` +
+        `Asin bulutu: PostgREST Accept başlığı reddedildi (HTTP 406). ` +
         `Kiracı URL'si doğru mu kontrol edin: https://api.retailex.app/${slug || 'kiracı'}.`
       );
     }
@@ -1261,11 +1258,11 @@ export function explainPostgrestConnectionError(
         msg.includes('Connection refused'));
     if (isNetwork) {
       return (
-        'RetailEX bulutuna (api.retailex.app) ulaşılamadı. İnternet bağlantınızı kontrol edin. ' +
+        'Asin bulutuna (api.retailex.app) ulaşılamadı. İnternet bağlantınızı kontrol edin. ' +
         'LAN Wi‑Fi / TCP 3002 bu ekran için geçerli değildir.'
       );
     }
-    return msg || 'RetailEX bulutu PostgREST erişilemedi';
+    return msg || 'Asin bulutu PostgREST erişilemedi';
   }
 
   if (port === '3001') {
@@ -1274,10 +1271,10 @@ export function explainPostgrestConnectionError(
 
   const httpStatus = opts?.httpStatus;
   if (httpStatus === 404) {
-    return 'PostgREST firms tablosuna erişilemedi (404). Port 3002 ve RetailEX_PostgREST servisini kontrol edin.';
+    return 'PostgREST firms tablosuna erişilemedi (404). Port 3002 ve PostgREST servisini kontrol edin.';
   }
   if (httpStatus === 406) {
-    return 'PostgREST yanıt vermiyor (HTTP 406). Port 3002 ve RetailEX_PostgREST servisini kontrol edin.';
+    return 'PostgREST yanıt vermiyor (HTTP 406). Port 3002 ve PostgREST servisini kontrol edin.';
   }
 
   const msg = String(opts?.error || '').trim();
@@ -1299,7 +1296,7 @@ export function explainPostgrestConnectionError(
         `${host} genelde WSL sanal ağıdır; Windows'ta cmd → ipconfig ile Wi‑Fi IPv4 (192.168.x.x) adresini kullanın.`,
       );
     }
-    hints.push('Merkez PC: RetailEX_PostgREST servisi çalışıyor olmalı; güvenlik duvarında TCP 3002 açık olmalı.');
+    hints.push('Merkez PC: PostgREST servisi çalışıyor olmalı; güvenlik duvarında TCP 3002 açık olmalı.');
     hints.push('Örnek: http://192.168.1.10:3002');
     return hints.join(' ');
   }

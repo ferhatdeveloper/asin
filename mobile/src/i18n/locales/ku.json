@@ -1,5 +1,5 @@
 {
-  "appName": "RetailEX",
+  "appName": "Asin",
   "tagline": "ERP CORE ENGINE",
   "username": "ناوی بەکارهێنەر",
   "password": "وشەی نهێنی",
@@ -296,7 +296,7 @@
     "cameraPermission": "بۆ پشکنینی بەڵگە کامێرا ڕێگە بدە.",
     "galleryPermission": "بۆ هەڵبژاردن یان پاشەکەوت گەلەری ڕێگە بدە.",
     "saveToGallery": "بەڵگە لە گەلەری پاشەکەوت بکە",
-    "saveToGalleryHint": "وێنەی پشکنراو لە ئەلبوومی RetailEX پاشەکەوت دەکات.",
+    "saveToGalleryHint": "وێنەی پشکنراو لە ئەلبوومی Asin پاشەکەوت دەکات.",
     "savedToGallery": "بەڵگە لە گەلەری پاشەکەوت کرا.",
     "saveFailed": "گەلەری پاشەکەوت نەبوو — دەتوانیت بەردەوام بیت.",
     "nativeScanOk": "قەراغ و گۆشە چاککرا (native scanner).",

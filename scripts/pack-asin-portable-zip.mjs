@@ -42,10 +42,13 @@ Kurulum gerekmez. Flash belleğe kopyalayıp çalıştırın.
 1) Bu klasörün tamamını USB flash belleğe kopyalayın
    (ör. E:\\AsinERP\\). Zip'i açtıktan sonra tek klasör olarak tutun.
 
-2) retailex.exe dosyasını çift tıklayın.
-   (Windows WebView2 Runtime gerekir — çoğu Windows 10/11'de yüklüdür.)
+2) retailex.exe dosyasını çift tıklayın (pencere başlığı: AsinERP).
+   Windows WebView2 Runtime gerekir.
 
-3) Ayarlar ve yerel veri EXE yanındaki data\\ klasöründe tutulur:
+3) Girişte önce kiracı kodu istenir (api.retailex.app/{kod}).
+   Yerel PostgreSQL kullanılmaz — bulut PostgREST.
+
+4) Ayarlar EXE yanındaki data\\ klasöründe tutulur:
    - data\\config.db
    - data\\logs\\
    - data\\backups\\

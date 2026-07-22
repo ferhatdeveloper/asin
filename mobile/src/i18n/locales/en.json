@@ -1,5 +1,5 @@
 {
-  "appName": "RetailEX",
+  "appName": "Asin",
   "tagline": "ERP CORE ENGINE",
   "username": "Username",
   "password": "Password",
@@ -301,7 +301,7 @@
     "cameraPermission": "Allow camera access to scan documents.",
     "galleryPermission": "Allow gallery access to pick or save.",
     "saveToGallery": "Save document to gallery",
-    "saveToGalleryHint": "Saves the scanned image to the RetailEX album (permission required).",
+    "saveToGalleryHint": "Saves the scanned image to the Asin album (permission required).",
     "savedToGallery": "Scanned document saved to gallery.",
     "saveFailed": "Could not save to gallery — you can continue.",
     "nativeScanOk": "Edge detect / perspective correction done (native scanner).",

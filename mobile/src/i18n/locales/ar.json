@@ -1,5 +1,5 @@
 {
-  "appName": "RetailEX",
+  "appName": "Asin",
   "tagline": "ERP CORE ENGINE",
   "username": "اسم المستخدم",
   "password": "كلمة المرور",
@@ -296,7 +296,7 @@
     "cameraPermission": "اسمح بالكاميرا لمسح المستندات.",
     "galleryPermission": "اسمح بالمعرض للاختيار أو الحفظ.",
     "saveToGallery": "حفظ المستند في المعرض",
-    "saveToGalleryHint": "يحفظ الصورة الممسوحة في ألبوم RetailEX.",
+    "saveToGalleryHint": "يحفظ الصورة الممسوحة في ألبوم Asin.",
     "savedToGallery": "تم حفظ المستند في المعرض.",
     "saveFailed": "تعذر الحفظ في المعرض — يمكنك المتابعة.",
     "nativeScanOk": "اكتمل كشف الحواف وتصحيح المنظور (ماسح أصلي).",

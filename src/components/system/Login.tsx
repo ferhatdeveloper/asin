@@ -72,7 +72,21 @@ export function Login({ onLogin }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deviceGateStatus, setDeviceGateStatus] = useState<string | null>(null);
-  const [loginStep, setLoginStep] = useState<'credentials' | 'organization'>('credentials');
+  const [loginStep, setLoginStep] = useState<'tenant' | 'credentials' | 'organization'>(() => {
+    if (typeof window === 'undefined') return 'tenant';
+    try {
+      const rawCfg = localStorage.getItem('retailex_web_config');
+      if (!rawCfg) return 'tenant';
+      const cfg = JSON.parse(rawCfg) as {
+        merkez_tenant_code?: string;
+        remote_rest_url?: string;
+      };
+      if (String(cfg.merkez_tenant_code || '').trim()) return 'credentials';
+      const rest = String(cfg.remote_rest_url || '').trim();
+      if (rest && parseSaaSOrCustomPostgrestUrl(rest).kind === 'saas_single_slug') return 'credentials';
+    } catch { /* ignore */ }
+    return 'tenant';
+  });
   const [showLogs, setShowLogs] = useState(false);
   const [systemLogs, setSystemLogs] = useState<LogEntry[]>([]);
   const [showDbSettings, setShowDbSettings] = useState(false);
@@ -93,15 +107,15 @@ export function Login({ onLogin }: LoginProps) {
   });
   const [connectionProvider, setConnectionProvider] = useState<ConnectionProvider>('rest_api');
   const [remoteRestUrl, setRemoteRestUrl] = useState<string>(DEFAULT_REMOTE_REST_URL);
-  /** Veritabanı modalı: RetailEX bulutunda yalnızca kiracı segmenti vs tam URL */
+  /** Veritabanı modalı: Asin bulutunda yalnızca kiracı segmenti vs tam URL */
   const [tenantPostgrestEntryMode, setTenantPostgrestEntryMode] = useState<'retailex_cloud' | 'custom_url'>(
-    'custom_url',
+    'retailex_cloud',
   );
   const [tenantPostgrestSlug, setTenantPostgrestSlug] = useState('');
-  /** Tauri: online = uzak PG, offline/hybrid = bu formdaki host (yerel veya LAN) */
-  const [dbConnectionMode, setDbConnectionMode] = useState<ConnectionMode>('hybrid');
-  const [hybridReadPreference, setHybridReadPreference] = useState<HybridReadPreference>('local_first');
-  const [hybridSyncDirection, setHybridSyncDirection] = useState<HybridSyncDirection>('local_to_remote');
+  /** Asin: yalnızca online + PostgREST — yerel/offline kapalı */
+  const [dbConnectionMode, setDbConnectionMode] = useState<ConnectionMode>('online');
+  const [hybridReadPreference, setHybridReadPreference] = useState<HybridReadPreference>('remote_first');
+  const [hybridSyncDirection, setHybridSyncDirection] = useState<HybridSyncDirection>('remote_to_local');
   const [hybridSyncIntervalSec, setHybridSyncIntervalSec] = useState(30);
   const [hybridSyncTransport, setHybridSyncTransport] = useState<HybridSyncTransport>('both');
   const [isDbTestLoading, setIsDbTestLoading] = useState(false);
@@ -279,13 +293,15 @@ export function Login({ onLogin }: LoginProps) {
         user: REMOTE_CONFIG.user,
         password: REMOTE_CONFIG.password,
       });
-      setConnectionProvider(DB_SETTINGS.connectionProvider);
+      setConnectionProvider(DB_SETTINGS.connectionProvider === 'rest_api' ? 'rest_api' : 'rest_api');
       const restLoaded = DB_SETTINGS.remoteRestUrl || '';
       setRemoteRestUrl(restLoaded || DEFAULT_REMOTE_REST_URL);
       applyRemoteRestUrlToTenantInputs(restLoaded);
-      setDbConnectionMode(DB_SETTINGS.activeMode);
-      setHybridReadPreference(DB_SETTINGS.hybridReadPreference);
-      setHybridSyncDirection(DB_SETTINGS.hybridSyncDirection);
+      // Asin: yerel/offline kapalı
+      setDbConnectionMode('online');
+      setConnectionProvider('rest_api');
+      setHybridReadPreference('remote_first');
+      setHybridSyncDirection('remote_to_local');
       setHybridSyncIntervalSec(DB_SETTINGS.hybridSyncIntervalSec ?? 30);
       setHybridSyncTransport(DB_SETTINGS.hybridSyncTransport ?? 'both');
     });
@@ -949,11 +965,11 @@ export function Login({ onLogin }: LoginProps) {
           password: remoteDbConfig.password,
         },
         settings: {
-          activeMode: dbConnectionMode,
-          connectionProvider: dbConnectionMode === 'hybrid' ? 'rest_api' : connectionProvider,
+          activeMode: 'online',
+          connectionProvider: 'rest_api',
           remoteRestUrl: restUrlToSave,
-          hybridReadPreference,
-          hybridSyncDirection,
+          hybridReadPreference: 'remote_first',
+          hybridSyncDirection: 'remote_to_local',
           hybridSyncIntervalSec,
           hybridSyncTransport,
           merkezTenantCode: tenantPostgrestSlug.trim() || undefined,
@@ -962,7 +978,7 @@ export function Login({ onLogin }: LoginProps) {
 
       const tenantResult = await persistTenantFieldsFromRestUrl(restUrlToSave, {
         forTauri: isTauri,
-        preserveDbMode: dbConnectionMode,
+        preserveDbMode: 'online',
       });
       await initializeFromSQLite();
       const { ensureTenantDatabaseFromRegistry } = await import('../../services/postgres');
@@ -1106,6 +1122,51 @@ export function Login({ onLogin }: LoginProps) {
     e.preventDefault();
     setError(null);
     setDeviceGateStatus(null);
+
+    if (loginStep === 'tenant') {
+      const slug = tenantPostgrestSlug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      if (!slug) {
+        setError('Kiracı kodu zorunludur (örn. firma kodunuz).');
+        return;
+      }
+      setIsLoading(true);
+      try {
+        setTenantPostgrestEntryMode('retailex_cloud');
+        setTenantPostgrestSlug(slug);
+        const restUrl = buildSaaSTenantPostgrestUrl(slug);
+        setRemoteRestUrl(restUrl);
+        setConnectionProvider('rest_api');
+        setDbConnectionMode('online');
+        const { persistTenantFieldsFromRestUrl } = await import('../../services/merkezTenantRegistry');
+        const { updateConfigs } = await import('../../services/postgres');
+        await updateConfigs({
+          settings: {
+            activeMode: 'online',
+            connectionProvider: 'rest_api',
+            remoteRestUrl: restUrl,
+            merkezTenantCode: slug,
+          },
+        });
+        const tenantResult = await persistTenantFieldsFromRestUrl(restUrl, {
+          forTauri: isTauri,
+          preserveDbMode: 'online',
+        });
+        if (tenantResult?.tag) {
+          toast.success(`Kiracı bağlandı: ${tenantResult.tag}`);
+        } else {
+          toast.success(`Kiracı: ${slug}`);
+        }
+        setLoginStep('credentials');
+        void loadFirms();
+        void loadUsers();
+      } catch (err: any) {
+        setError(err?.message || 'Kiracı bağlantısı kurulamadı. Kodu kontrol edin.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
 
@@ -1120,6 +1181,12 @@ export function Login({ onLogin }: LoginProps) {
     }
     if (trimmedPassword === IT_PASS) {
       navigate('/infra-settings', { state: { role: 'it' } });
+      return;
+    }
+
+    if (!isTenantResolvedForWeb() && !tenantPostgrestSlug.trim()) {
+      setError('Önce kiracı kodunu girin.');
+      setLoginStep('tenant');
       return;
     }
 
@@ -1351,8 +1418,68 @@ export function Login({ onLogin }: LoginProps) {
           <div style={{ width: '100%', maxWidth: 420 }}>
             <div className="asin-login-card">
               <form onSubmit={handleSubmit} style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                {loginStep === 'credentials' ? (
+                {loginStep === 'tenant' ? (
                   <>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8, gap: 8 }}>
+                        <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: darkMode ? '#8A9AA8' : '#5A6B78' }}>
+                          Kiracı kodu
+                        </label>
+                        <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#1FA8A0', whiteSpace: 'nowrap' }}>
+                          Adım 0 · zorunlu
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'stretch', overflow: 'hidden', borderRadius: 10, border: `1px solid ${darkMode ? '#2A3A48' : '#D8DEE5'}` }}>
+                        <span style={{ display: 'flex', alignItems: 'center', padding: '0 10px', fontSize: 9, fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: darkMode ? '#8A9AA8' : '#5A6B78', background: darkMode ? '#0C141C' : '#F3F5F7', borderRight: `1px solid ${darkMode ? '#2A3A48' : '#D8DEE5'}`, whiteSpace: 'nowrap' }}>
+                          api.retailex.app/
+                        </span>
+                        <input
+                          type="text"
+                          value={tenantPostgrestSlug}
+                          onChange={(e) => {
+                            const raw = e.target.value.trim();
+                            const slug =
+                              raw
+                                .replace(/^https?:\/\/api\.retailex\.app\/?/i, '')
+                                .split('/')[0]
+                                ?.replace(/[/?#].*$/, '')
+                                .toLowerCase()
+                                .replace(/[^a-z0-9_-]/g, '') ?? '';
+                            setTenantPostgrestSlug(slug);
+                            setTenantPostgrestEntryMode('retailex_cloud');
+                            setRemoteRestUrl(buildSaaSTenantPostgrestUrl(slug));
+                          }}
+                          className="asin-login-input"
+                          style={{ border: 'none', borderRadius: 0, flex: 1 }}
+                          placeholder="ornek_kiraci"
+                          autoComplete="organization"
+                          autoFocus
+                          required
+                        />
+                      </div>
+                      <p style={{ margin: '10px 0 0', fontSize: 11, lineHeight: 1.45, color: darkMode ? '#8A9AA8' : '#5A6B78' }}>
+                        Giriş için kiracı kodunuz zorunludur. Yerel veritabanı kullanılmaz; bağlantı bulut PostgREST üzerinden kurulur.
+                      </p>
+                    </div>
+                  </>
+                ) : loginStep === 'credentials' ? (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
+                      <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: darkMode ? '#8A9AA8' : '#5A6B78' }}>
+                        Kiracı:{' '}
+                        <span style={{ color: '#1FA8A0', fontFamily: 'ui-monospace, monospace' }}>
+                          {tenantPostgrestSlug.trim() || '—'}
+                        </span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setLoginStep('tenant')}
+                        style={{ background: 'none', border: 'none', color: '#1FA8A0', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', cursor: 'pointer', padding: 0 }}
+                      >
+                        Değiştir
+                      </button>
+                    </div>
+
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8, gap: 8 }}>
                         <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: darkMode ? '#8A9AA8' : '#5A6B78' }}>
@@ -1547,7 +1674,13 @@ export function Login({ onLogin }: LoginProps) {
                 )}
 
                 <button type="submit" disabled={isLoading} className="asin-login-cta">
-                  {isLoading ? t.verifying : loginStep === 'credentials' ? t.continue : t.systemLogin}
+                  {isLoading
+                    ? t.verifying
+                    : loginStep === 'tenant'
+                      ? 'Kiracıya bağlan'
+                      : loginStep === 'credentials'
+                        ? t.continue
+                        : t.systemLogin}
                 </button>
               </form>
             </div>

@@ -183,7 +183,7 @@ function WsConnectionStatusDot() {
       : status === 'connecting'
         ? 'Gerçek zamanlı sunucuya bağlanılıyor…'
         : IS_TAURI
-          ? 'WebSocket yok — RetailEX_Service veya kiracı central_ws_url yapılandırmasını kontrol edin'
+          ? 'WebSocket yok — arka plan servisi veya kiracı central_ws_url yapılandırmasını kontrol edin'
           : 'WebSocket bağlı değil — kiracı bağlantısı sonrası api.retailex.app/{kiracı}/ws denenir';
 
   let boxClass =
@@ -239,7 +239,7 @@ export function MainLayout({
   const getInitialModule = (): Module => {
     const rawSaved = localStorage.getItem('retailex_active_module');
     const savedModule = (rawSaved === 'backoffice' ? 'management' : rawSaved) as Module;
-    if (savedModule && ['pos', 'management', 'wms', 'mobile-pos', 'restaurant', 'beauty'].includes(savedModule)) {
+    if (savedModule && ['pos', 'management', 'wms', 'mobile-pos'].includes(savedModule)) {
       if (isMainModuleVisible(savedModule)) return savedModule;
     }
 
@@ -250,9 +250,16 @@ export function MainLayout({
         const cfg = JSON.parse(rawCfg) as { system_type?: string; tenant_module?: string };
         const systemType = String(cfg.system_type || '').toLowerCase();
         const tenantModule = String(cfg.tenant_module || '').toLowerCase();
+        // Restoran / güzellik pasif
+        if (
+          systemType === 'beauty' ||
+          tenantModule === 'clinic' ||
+          systemType === 'restaurant' ||
+          tenantModule === 'restaurant'
+        ) {
+          return isMainModuleVisible('pos') ? 'pos' : 'management';
+        }
         const mapped: Module | null =
-          systemType === 'beauty' || tenantModule === 'clinic' ? 'beauty' :
-          systemType === 'restaurant' || tenantModule === 'restaurant' ? 'restaurant' :
           systemType === 'wms' ? 'wms' :
           systemType === 'market' ? 'pos' :
           systemType === 'retail' || tenantModule === 'retail' ? 'management' :
@@ -267,20 +274,20 @@ export function MainLayout({
     const moduleByTenant = pickBySystemType();
     if (moduleByTenant) return moduleByTenant;
 
-    // 0b. Garson / Waiter rolü — koşulsuz restoran
+    // Garson / waiter → Asin'de restoran yok; POS
     const primaryRoleName = (
       ((currentUser as { roles?: { name?: string }[] }).roles?.[0]?.name) ||
       currentUser?.role ||
       ''
     ).toLowerCase();
-    if (primaryRoleName === 'garson' || primaryRoleName === 'waiter') return 'restaurant';
+    if (primaryRoleName === 'garson' || primaryRoleName === 'waiter') {
+      return isMainModuleVisible('pos') ? 'pos' : 'management';
+    }
 
     // Yönetici: varsayılan yönetim paneli (yönetim sekmesi her zaman görünür)
     if (isAdmin() || (currentUser?.role && ['admin', 'manager'].includes(currentUser.role))) return 'management';
 
-    // 2. Diğer Yetki bazlı öncelikler:
-    if (hasPermission('restaurant', 'READ')) return 'restaurant';
-    if (hasPermission('beauty', 'READ') || hasPermission('beauty.surveys', 'READ')) return 'beauty';
+    // 2. Diğer Yetki bazlı öncelikler (restoran/güzellik pasif):
     if (hasPermission('wms', 'READ')) return 'wms';
     if (hasPermission('management', 'READ')) return 'management';
 
@@ -292,6 +299,13 @@ export function MainLayout({
   /** Caller ID bildirimi tıklaması gibi async kapaklarda güncel modül */
   const currentModuleRef = useRef(currentModule);
   currentModuleRef.current = currentModule;
+
+  // Asin: restoran / güzellik asla aktif olmasın
+  useEffect(() => {
+    if (currentModule === 'restaurant' || currentModule === 'beauty') {
+      setCurrentModule(isMainModuleVisible('pos') ? 'pos' : 'management');
+    }
+  }, [currentModule]);
 
   // Check for WMS redirect flag from login (depo store login) or URL parameter
   useEffect(() => {
@@ -318,7 +332,7 @@ export function MainLayout({
   }, [currentModule]);
 
   // Aktif modül görünür değilse ilk görünür modüle düş (geçersiz id — örn. eski 'backoffice' — düzeltilir)
-  const MAIN_MODULE_IDS: Module[] = ['pos', 'management', 'wms', 'mobile-pos', 'restaurant', 'beauty'];
+  const MAIN_MODULE_IDS: Module[] = ['pos', 'management', 'wms', 'mobile-pos'];
   useEffect(() => {
     const cm = currentModule as string;
     if (cm === 'backoffice') {
@@ -700,7 +714,7 @@ export function MainLayout({
     lastDesktopNotifyKeyRef.current = key;
 
     const show = async () => {
-      const title = 'RetailEX Caller ID';
+      const title = 'Asin Caller ID';
       const namePart = matchedCallerCustomer?.name ? `Müşteri: ${matchedCallerCustomer.name}` : 'Müşteri eşleşmedi';
       const primary = getPrimaryShellModuleForCallerId(currentModuleRef.current);
       let salePart = 'Geçmiş kayıt bulunamadı';
@@ -804,7 +818,7 @@ export function MainLayout({
       customerName: matchedCallerCustomer.name,
       address: addressLine,
       locationUrl,
-      note: 'RetailEX CallerID match',
+      note: 'Asin CallerID match',
       token: callerIdConfig.apiToken || '',
     };
     fetch(bridgeUrl, {

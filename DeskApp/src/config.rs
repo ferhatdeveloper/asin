@@ -219,6 +219,8 @@ fn default_beauty_slot_interval_min() -> i32 {
 
 fn default_hidden_modules() -> Vec<String> {
     vec![
+        "restaurant".to_string(),
+        "beauty".to_string(),
         "retail".to_string(),
         "communication-notifications".to_string(),
         "stock-dashboard".to_string(),
@@ -261,14 +263,14 @@ impl Default for AppConfig {
     fn default() -> Self {
         Self {
             is_configured: false,
-            db_mode: "hybrid".to_string(),
+            db_mode: "online".to_string(),
             local_db: "localhost:5432/retailex_local".to_string(),
             remote_db: "72.60.182.107:5432/retailex_demo".to_string(), // sync: config/remote-pg.defaults.json
             connection_provider: default_connection_provider(),
             remote_rest_url: default_remote_rest_url(),
             merkez_tenant_code: String::new(),
-            hybrid_read_preference: default_hybrid_read_preference(),
-            hybrid_sync_direction: default_hybrid_sync_direction(),
+            hybrid_read_preference: "remote_first".to_string(),
+            hybrid_sync_direction: "remote_to_local".to_string(),
             hybrid_sync_interval_sec: default_hybrid_sync_interval_sec(),
             hybrid_sync_transport: default_hybrid_sync_transport(),
             terminal_name: "".to_string(),
