@@ -1,6 +1,11 @@
 # AGENTS.md
 
+## Ürün ayrımı (zorunlu)
+
+- **AsinERP** ve **RetailEX** ayrı ürün / ayrı repo — karıştırma. Ayrıntı: `.cursor/rules/asin-retailex-product-separation.mdc`
+
 ## Çalışma biçimi (zorunlu — tüm ajanlar)
+
 
 - **Çoklu ajan:** Bağımsız keşif/uygulama/doğrulama parçalarını paralel Task/alt ajanla yürüt; tek ajan sıraya dizme yalnızca zorunlu bağımlılıkta.
 - **Kıdemli muhasebe denetimi:** Kasa, cari, fatura, ekstre, mizan, bakiye, devir, virman veya borç/alacak işareti dokunan işte teslim öncesi 90 yıllık muhasebeci kontrolü (işaret, cari türü, dönem, kasa-banka dengesi).
