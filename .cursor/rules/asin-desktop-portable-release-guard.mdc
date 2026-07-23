@@ -1,0 +1,43 @@
+---
+description: AsinERP portable/release — yalnızca asin repo; RetailEX’e yükleme yasak
+alwaysApply: true
+---
+
+# AsinERP — portable / desktop release marka koruması
+
+AsinERP Portable yanlışlıkla **RetailEX** releases’a düşmesin. Ürün ayrımı: `asin-retailex-product-separation.mdc`.
+
+## Remote kontrol (zorunlu — her tag / release öncesi)
+
+`app-v*`, `portable-v*`, `android-v*` push veya `gh release` / `gh workflow run` **öncesi**:
+
+1. `git remote -v` → **`origin`** URL’sinde **`asin`** (repo `ferhatdeveloper/asin`) olmalı.
+2. `origin` **`RetailEX`** ise: **dur** — RetailEX işi yalnızca RetailEX kökünde; burada AsinERP asset üretme/yükleme yok.
+3. Yanlış repoya tag, asset veya workflow tetikleme **yasak**.
+
+## Asin portable (doğru yer)
+
+| Öğe | Kalıp |
+|-----|--------|
+| Zip | `AsinERP-Portable-{version}.zip` |
+| Tag | `portable-v{version}` (yalnızca `origin` = asin) |
+| Workflow | `.github/workflows/desktop-portable-release.yml` |
+| Release adı | `AsinERP Portable {version}` |
+
+NSIS: `AsinERP-Desktop-Setup-{version}.exe` + `app-v{version}` — yine yalnızca asin `origin`.
+
+## Yasak
+
+- RetailEX Actions / `ferhatdeveloper/RetailEX` releases’a `AsinERP-*` asset, title veya tag
+- RetailEX workspace’te `npm run desktop:ci:portable` / Asin portable zip yükleme
+- RetailEX’e Asin `desktop-portable-release.yml` kopyalama (yanlış marka riski)
+
+## RetailEX portable (ayrı ürün)
+
+Gerekirse yalnızca RetailEX repo’da: `RetailEX-Portable-{version}.zip` — ayrıntı RetailEX kuralı `retailex-desktop-portable-release-guard.mdc`.
+
+## Ajan checklist
+
+- [ ] `origin` = asin mi doğrulandı?
+- [ ] Release hedefi `ferhatdeveloper/asin` mi (RetailEX değil)?
+- [ ] Asset adı `AsinERP-Portable-…` ve yanlışlıkla RetailEX’e push yok mu?
