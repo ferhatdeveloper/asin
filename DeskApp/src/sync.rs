@@ -199,7 +199,7 @@ pub struct ServiceSyncHistoryEntry {
 
 static HEADLESS_RUNTIME: OnceLock<tokio::runtime::Handle> = OnceLock::new();
 
-/// Windows servisi (RetailEX_Service) — Tauri olmadan arka plan görevleri için.
+/// Windows servisi (AsinERP_Service) — Tauri olmadan arka plan görevleri için.
 pub fn register_headless_runtime(handle: tokio::runtime::Handle) {
     let _ = HEADLESS_RUNTIME.set(handle);
 }
@@ -210,13 +210,13 @@ fn retail_ex_data_dir() -> PathBuf {
     }
     #[cfg(windows)]
     {
-        PathBuf::from(r"C:\ProgramData\RetailEX")
+        PathBuf::from(r"C:\ProgramData\AsinERP")
     }
     #[cfg(not(windows))]
     {
         std::env::var("RETAILEX_DATA_DIR")
             .map(PathBuf::from)
-            .unwrap_or_else(|_| PathBuf::from("/tmp/RetailEX"))
+            .unwrap_or_else(|_| PathBuf::from("/tmp/AsinERP"))
     }
 }
 

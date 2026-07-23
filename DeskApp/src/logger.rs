@@ -59,13 +59,13 @@ pub fn log_from_frontend(level: String, context: String, details: String) {
     log_system_error(&level, &context, &details);
 }
 
-/// Writes a CRUD error as a JSON line (portable: `{exe}/data/logs`, kurulum: `C:\RetailEX\log`).
+/// Writes a CRUD error as a JSON line (portable: `{exe}/data/logs`, kurulum: `C:\AsinERP\log`).
 #[tauri::command]
 pub fn log_crud_error(payload: String) {
     let log_dir = if crate::config::is_portable_mode() {
         crate::config::get_logs_dir()
     } else {
-        let d = PathBuf::from(r"C:\RetailEX\log");
+        let d = PathBuf::from(r"C:\AsinERP\log");
         let _ = fs::create_dir_all(&d);
         d
     };

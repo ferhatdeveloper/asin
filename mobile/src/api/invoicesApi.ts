@@ -867,7 +867,7 @@ async function createSalesInvoiceLive(
       currencyRate,
       opts.paymentMethod || 'Nakit',
       cashier,
-      opts.notes?.trim() || 'RetailEX Mobile Fatura',
+      opts.notes?.trim() || 'Asin Mobile Fatura',
       headerFieldsJson,
     ],
   );
@@ -977,7 +977,7 @@ export async function createSalesInvoice(
       trcode: 8,
       payment_method: opts.paymentMethod || 'Nakit',
       is_cancelled: false,
-      notes: opts.notes?.trim() || 'RetailEX Mobile Fatura',
+      notes: opts.notes?.trim() || 'Asin Mobile Fatura',
       total_vat: totals.totalVat,
       total_discount: totals.lineDiscount + totals.footerDiscount,
       currency: 'TRY',
@@ -1063,7 +1063,7 @@ async function createPurchaseInvoiceLive(
       currencyRate,
       opts.paymentMethod || 'Nakit',
       cashier,
-      opts.notes?.trim() || 'RetailEX Mobile Alış Faturası',
+      opts.notes?.trim() || 'Asin Mobile Alış Faturası',
       headerFieldsJson,
     ],
   );
@@ -1175,7 +1175,7 @@ export async function createPurchaseInvoice(
       trcode: 1,
       payment_method: opts.paymentMethod || 'Nakit',
       is_cancelled: false,
-      notes: opts.notes?.trim() || 'RetailEX Mobile Alış Faturası',
+      notes: opts.notes?.trim() || 'Asin Mobile Alış Faturası',
       total_vat: totals.totalVat,
       total_discount: totals.lineDiscount + totals.footerDiscount,
       currency: 'TRY',
@@ -1240,7 +1240,7 @@ async function createReturnInvoiceLive(
   const notesParts = [
     opts.notes?.trim(),
     reasonNote ? `İade nedeni: ${reasonNote}` : null,
-    'RetailEX Mobile İade',
+    'Asin Mobile İade',
   ].filter(Boolean);
   const notes = notesParts.join(' · ');
 
@@ -1412,7 +1412,7 @@ export async function createReturnInvoice(
       trcode: opts.trcode,
       payment_method: opts.paymentMethod || 'Nakit',
       is_cancelled: false,
-      notes: opts.notes?.trim() || 'RetailEX Mobile İade',
+      notes: opts.notes?.trim() || 'Asin Mobile İade',
       total_vat: totals.totalVat,
       total_discount: totals.lineDiscount + totals.footerDiscount,
       currency: 'TRY',
@@ -1595,7 +1595,7 @@ const DOCUMENT_SPECS: Record<InvoiceDocumentKind, DocumentSpec> = {
     applyCustomerDebt: true,
     applySupplierDebt: false,
     applyCashIn: true,
-    noteDefault: 'RetailEX Mobile Verilen Hizmet',
+    noteDefault: 'Asin Mobile Verilen Hizmet',
     defaultStatus: 'approved',
   },
   'service-received': {
@@ -1606,7 +1606,7 @@ const DOCUMENT_SPECS: Record<InvoiceDocumentKind, DocumentSpec> = {
     applyCustomerDebt: false,
     applySupplierDebt: true,
     applyCashIn: false,
-    noteDefault: 'RetailEX Mobile Alınan Hizmet',
+    noteDefault: 'Asin Mobile Alınan Hizmet',
     defaultStatus: 'approved',
   },
   'waybill-sales': {
@@ -1617,7 +1617,7 @@ const DOCUMENT_SPECS: Record<InvoiceDocumentKind, DocumentSpec> = {
     applyCustomerDebt: false,
     applySupplierDebt: false,
     applyCashIn: false,
-    noteDefault: 'RetailEX Mobile Satış İrsaliyesi',
+    noteDefault: 'Asin Mobile Satış İrsaliyesi',
     defaultStatus: 'approved',
   },
   'waybill-purchase': {
@@ -1628,7 +1628,7 @@ const DOCUMENT_SPECS: Record<InvoiceDocumentKind, DocumentSpec> = {
     applyCustomerDebt: false,
     applySupplierDebt: false,
     applyCashIn: false,
-    noteDefault: 'RetailEX Mobile Alış İrsaliyesi',
+    noteDefault: 'Asin Mobile Alış İrsaliyesi',
     defaultStatus: 'approved',
   },
   'order-sales': {
@@ -1639,7 +1639,7 @@ const DOCUMENT_SPECS: Record<InvoiceDocumentKind, DocumentSpec> = {
     applyCustomerDebt: false,
     applySupplierDebt: false,
     applyCashIn: false,
-    noteDefault: 'RetailEX Mobile Satış Siparişi',
+    noteDefault: 'Asin Mobile Satış Siparişi',
     defaultStatus: 'draft',
   },
   'order-purchase': {
@@ -1650,7 +1650,7 @@ const DOCUMENT_SPECS: Record<InvoiceDocumentKind, DocumentSpec> = {
     applyCustomerDebt: false,
     applySupplierDebt: false,
     applyCashIn: false,
-    noteDefault: 'RetailEX Mobile Satınalma Siparişi',
+    noteDefault: 'Asin Mobile Satınalma Siparişi',
     defaultStatus: 'draft',
   },
   quote: {
@@ -1661,7 +1661,7 @@ const DOCUMENT_SPECS: Record<InvoiceDocumentKind, DocumentSpec> = {
     applyCustomerDebt: false,
     applySupplierDebt: false,
     applyCashIn: false,
-    noteDefault: 'RetailEX Mobile Teklif',
+    noteDefault: 'Asin Mobile Teklif',
     defaultStatus: 'draft',
   },
 };

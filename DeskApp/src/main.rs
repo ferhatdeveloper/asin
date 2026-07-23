@@ -178,7 +178,7 @@ async fn install_pg16(app: tauri::AppHandle) -> Result<String, String> {
         return Err(String::from_utf8_lossy(&output.stderr).to_string());
     }
 
-    // Tum ag arayuzlerinde dinleme + pg_hba + firewall (RetailEX uzak baglanti)
+    // Tum ag arayuzlerinde dinleme + pg_hba + firewall (AsinERP uzak baglanti)
     #[cfg(windows)]
     {
         let mut ran = false;
@@ -205,24 +205,24 @@ async fn install_pg16(app: tauri::AppHandle) -> Result<String, String> {
                 Ok(o) => {
                     if o.status.success() {
                         println!(
-                            "RetailEX: PostgreSQL remote listen configured.\n{}",
+                            "AsinERP: PostgreSQL remote listen configured.\n{}",
                             String::from_utf8_lossy(&o.stdout)
                         );
                     } else {
                         eprintln!(
-                            "RetailEX: pg-windows-expose-remote failed: {}",
+                            "AsinERP: pg-windows-expose-remote failed: {}",
                             String::from_utf8_lossy(&o.stderr)
                         );
                     }
                     ran = true;
                 }
-                Err(e) => eprintln!("RetailEX: could not run pg-windows-expose-remote: {}", e),
+                Err(e) => eprintln!("AsinERP: could not run pg-windows-expose-remote: {}", e),
             }
             break;
         }
         if !ran {
             eprintln!(
-                "RetailEX: pg-windows-expose-remote.ps1 not bundled; run database/scripts/pg-windows-expose-remote.ps1 -AllowAllNetworks manually (admin)."
+                "AsinERP: pg-windows-expose-remote.ps1 not bundled; run database/scripts/pg-windows-expose-remote.ps1 -AllowAllNetworks manually (admin)."
             );
         }
     }
@@ -1248,7 +1248,7 @@ async fn dump_supabase_to_sql(window: tauri::Window, project_ref: String, token:
     }
 
     let mut sql_dump = String::new();
-    sql_dump.push_str("-- RetailEX Supabase SQL Dump (API Mode)\n");
+    sql_dump.push_str("-- AsinERP Supabase SQL Dump (API Mode)\n");
     sql_dump.push_str(&format!("-- Generated at: {}\n\n", chrono::Utc::now().to_rfc3339()));
 
     let _ = window.emit("supabase-dump-progress", "Tablo şemaları analizi yapılıyor...");
@@ -1977,7 +1977,7 @@ fn check_bootstrap_config(app: &tauri::AppHandle) {
     } else {
         app.path()
             .app_config_dir()
-            .unwrap_or_else(|_| std::path::PathBuf::from(r"C:\RetailEx"))
+            .unwrap_or_else(|_| std::path::PathBuf::from(r"C:\AsinERP"))
             .join("bootstrap.json")
     };
     if bootstrap_path.exists() {
@@ -2153,22 +2153,30 @@ async fn show_touch_keyboard() -> Result<(), String> {
     Ok(())
 }
 
-/// Eski/elle kurulum: `C:\RetailEX` klasorunu tamamen siler (istege bagli; yonetici gerekebilir).
+/// Elle kurulum veri klasorunu siler: once `C:\AsinERP`, yoksa eski `C:\RetailEX` / `C:\RetailEx`.
 #[tauri::command]
 fn delete_c_retailex_folder() -> Result<String, String> {
     #[cfg(windows)]
     {
-        let p = std::path::Path::new(r"C:\RetailEX");
-        if !p.exists() {
-            return Ok("C:\\RetailEX bulunmuyor; atlandi.".into());
+        let candidates = [r"C:\AsinERP", r"C:\RetailEX", r"C:\RetailEx"];
+        let mut removed: Vec<String> = Vec::new();
+        for c in candidates {
+            let p = std::path::Path::new(c);
+            if !p.exists() {
+                continue;
+            }
+            std::fs::remove_dir_all(p).map_err(|e| {
+                format!(
+                    "{} silinemedi: {} (klasor baska programda acik olabilir veya yonetici gerekir)",
+                    c, e
+                )
+            })?;
+            removed.push(format!("{} silindi", c));
         }
-        std::fs::remove_dir_all(p).map_err(|e| {
-            format!(
-                "C:\\RetailEX silinemedi: {} (klasor baska programda acik olabilir veya yonetici gerekir)",
-                e
-            )
-        })?;
-        Ok("C:\\RetailEX silindi.".into())
+        if removed.is_empty() {
+            return Ok("C:\\AsinERP (veya eski C:\\RetailEX) bulunmuyor; atlandi.".into());
+        }
+        Ok(removed.join("; "))
     }
     #[cfg(not(windows))]
     {
@@ -2176,7 +2184,7 @@ fn delete_c_retailex_folder() -> Result<String, String> {
     }
 }
 
-/// Fabrika sifirlama / "Yeniden kurulum": RetailEX Windows hizmetlerini durdurur ve kaldir (yonetici gerekebilir).
+/// Fabrika sifirlama / "Yeniden kurulum": AsinERP Windows hizmetlerini durdurur ve kaldir (yonetici gerekebilir).
 #[tauri::command]
 fn remove_retailex_windows_services() -> Result<String, String> {
     #[cfg(windows)]
@@ -2191,6 +2199,12 @@ fn remove_retailex_windows_services() -> Result<String, String> {
             .to_path_buf();
 
         let pairs: &[(&str, &str)] = &[
+            ("AsinERP_Service.exe", "AsinERP_Service"),
+            ("AsinERP_SQL_Bridge.exe", "AsinERP_SQL_Bridge"),
+            ("AsinERP_Printer.exe", "AsinERP_Printer"),
+            ("AsinERP_Logo.exe", "AsinERP_Logo"),
+            ("AsinERP_Logo_Connector.exe", "AsinERPLogoConnector"),
+            // Eski kurulum adlari (yukseltme / fabrika sifirlama)
             ("RetailEX_Service.exe", "RetailEX_Service"),
             ("RetailEX_SQL_Bridge.exe", "RetailEX_SQL_Bridge"),
             ("RetailEX_Printer.exe", "RetailEX_Printer"),
@@ -2297,7 +2311,7 @@ async fn request_elevation() -> Result<(), String> {
 
 
 /// Kurulum (NSIS) `INSTDIR` icine bridge.cjs + package.json koyar; `install-bridge.ps1` burada
-/// servisi BOZMAMALI — RetailEX_SQL_Bridge.exe saricisi ImagePath'te kalir. Sadece eksik npm deps.
+/// servisi BOZMAMALI — AsinERP_SQL_Bridge.exe saricisi ImagePath'te kalir. Sadece eksik npm deps.
 fn ensure_bridge_service(_handle: &tauri::AppHandle) {
     let Some(exe) = std::env::current_exe().ok() else {
         return;

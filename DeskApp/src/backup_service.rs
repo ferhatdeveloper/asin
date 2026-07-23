@@ -62,7 +62,7 @@ fn backup_target_dir(config: &AppConfig) -> PathBuf {
             if crate::config::is_portable_mode() {
                 crate::config::get_backups_dir()
             } else {
-                PathBuf::from(r"C:\RetailEX_Backups")
+                PathBuf::from(r"C:\AsinERP_Backups")
             }
         })
 }
@@ -148,7 +148,7 @@ impl BackupService {
                 if crate::config::is_portable_mode() {
                     crate::config::get_backups_dir().to_string_lossy().to_string()
                 } else {
-                    r"C:\RetailEX_Backups".to_string()
+                    r"C:\AsinERP_Backups".to_string()
                 }
             } else {
                 backup_conf.backup_path.clone()

@@ -1271,10 +1271,10 @@ export function explainPostgrestConnectionError(
 
   const httpStatus = opts?.httpStatus;
   if (httpStatus === 404) {
-    return 'PostgREST firms tablosuna erişilemedi (404). Port 3002 ve PostgREST servisini kontrol edin.';
+    return 'PostgREST firms tablosuna erişilemedi (404). Port 3002 ve Windows hizmeti AsinERP_PostgREST kontrol edin.';
   }
   if (httpStatus === 406) {
-    return 'PostgREST yanıt vermiyor (HTTP 406). Port 3002 ve PostgREST servisini kontrol edin.';
+    return 'PostgREST yanıt vermiyor (HTTP 406). Port 3002 ve Windows hizmeti AsinERP_PostgREST kontrol edin.';
   }
 
   const msg = String(opts?.error || '').trim();

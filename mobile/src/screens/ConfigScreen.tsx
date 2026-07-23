@@ -707,7 +707,7 @@ export function ConfigScreen({ navigation }: Props) {
                     value={draft.remoteRestUrl || ''}
                     onChangeText={(v) => patch({ remoteRestUrl: v })}
                     autoCapitalize="none"
-                    placeholder="https://api.retailex.app/tenant"
+                    placeholder="https://…/tenant"
                   />
                   <FormField
                     label={t('postgrestAnonKey')}

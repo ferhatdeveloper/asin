@@ -80,7 +80,7 @@ jobs:
             find mobile/android/app/build/outputs -type f -ls || true
             exit 1
           fi
-          APK_DST="RetailEX-Android-${PACKAGE_VERSION}.apk"
+          APK_DST="AsinERP-Android-${PACKAGE_VERSION}.apk"
           cp "$APK_SRC" "$APK_DST"
           echo "APK_PATH=$APK_DST" >> "$GITHUB_ENV"
           ls -la "$APK_DST"
@@ -88,8 +88,8 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RetailEX-Android-${{ env.PACKAGE_VERSION }}
-          path: RetailEX-Android-${{ env.PACKAGE_VERSION }}.apk
+          name: AsinERP-Android-${{ env.PACKAGE_VERSION }}
+          path: AsinERP-Android-${{ env.PACKAGE_VERSION }}.apk
           if-no-files-found: error
 
       - name: Create GitHub Release
@@ -97,15 +97,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          name: RetailEX Android ${{ env.PACKAGE_VERSION }}
+          name: AsinERP Android ${{ env.PACKAGE_VERSION }}
           body: |
-            RetailEX Android APK (**React Native / Expo** — `mobile/`)
+            AsinERP Android APK (**React Native / Expo** — `mobile/`)
 
             **Sürüm:** ${{ env.PACKAGE_VERSION }}
-            **Dosya:** `RetailEX-Android-${{ env.PACKAGE_VERSION }}.apk`
+            **Dosya:** `AsinERP-Android-${{ env.PACKAGE_VERSION }}.apk`
             **Not:** İmza secret yokken CI **debug** APK üretir (`assembleDebug`). EAS alternatifleri (`mobile/eas.json`): profil `debug` ≈ bu CI; `preview` = dahili APK; `production` = Play AAB. Ayrıntı: `mobile/README.md` → EAS Build.
 
             Kurulum: APK’yı cihaza aktarıp yükleyin (bilinmeyen kaynaklara izin gerekebilir).
-          files: RetailEX-Android-${{ env.PACKAGE_VERSION }}.apk
+          files: AsinERP-Android-${{ env.PACKAGE_VERSION }}.apk
           draft: false
           prerelease: false

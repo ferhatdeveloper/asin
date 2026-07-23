@@ -35,7 +35,6 @@ import { supabase } from '../../utils/supabase/client';
 import {
   parseSaaSOrCustomPostgrestUrl,
   buildSaaSTenantPostgrestUrl,
-  DEFAULT_SAAS_TENANT_POSTGREST_ORIGIN,
 } from '../../services/merkezTenantRegistry';
 import {
   markForceSetupWizard,
@@ -158,7 +157,7 @@ export function Login({ onLogin }: LoginProps) {
   const [rtlMode, setRtlMode] = useState(false);
   const [activeOrgTab, setActiveOrgTab] = useState<'firm' | 'database'>('firm');
   const [showFactoryResetModal, setShowFactoryResetModal] = useState(false);
-  /** Varsayılan kapalı: C:\RetailEX silinsin mi */
+  /** Varsayılan kapalı: C:\AsinERP silinsin mi */
   const [factoryResetDeleteCRetailex, setFactoryResetDeleteCRetailex] = useState(false);
 
   const [firms, setFirms] = useState<any[]>([]);
@@ -635,7 +634,7 @@ export function Login({ onLogin }: LoginProps) {
         if (deleteCRetailexFolder) {
           const del = await deleteCRetailexFolderIfTauri();
           if (!del.ok) {
-            toast.error('C:\\RetailEX silinemedi: ' + (del.detail || ''));
+            toast.error('C:\\AsinERP silinemedi: ' + (del.detail || ''));
           } else if (del.detail) {
             toast.success(del.detail);
           }
@@ -671,7 +670,7 @@ export function Login({ onLogin }: LoginProps) {
           daily_backup: false,
           hourly_backup: false,
           periodic_min: 0,
-          backup_path: "C:\\RetailEx\\Backups",
+          backup_path: "C:\\AsinERP\\Backups",
           last_run: null
         }
       };
@@ -1323,7 +1322,7 @@ export function Login({ onLogin }: LoginProps) {
         </div>
         {tenantPostgrestEntryMode === 'retailex_cloud' ? (
           <div className={wrapCls}>
-            <span className={prefixCls}>{DEFAULT_SAAS_TENANT_POSTGREST_ORIGIN}/</span>
+            <span className={prefixCls}>Asin/</span>
             <input
               type="text"
               value={tenantPostgrestSlug}
@@ -1337,7 +1336,7 @@ export function Login({ onLogin }: LoginProps) {
                 setTenantPostgrestSlug(slug);
                 setRemoteRestUrl(buildSaaSTenantPostgrestUrl(slug));
               }}
-              placeholder="retailex_demo"
+              placeholder="kiraci_kodu"
               className={flexInputCls}
               autoComplete="off"
             />
@@ -1353,8 +1352,7 @@ export function Login({ onLogin }: LoginProps) {
           />
         )}
         <p className={`text-[9px] font-bold leading-relaxed ${darkMode ? 'text-slate-500' : 'text-[var(--asin-text-muted,#5A6B78)]'}`}>
-          Asin bulutu: yalnızca kiracı yolunu yazın (kayıtta{' '}
-          <span className="font-mono">{DEFAULT_SAAS_TENANT_POSTGREST_ORIGIN}/kiracı</span> birleştirilir). LAN veya başka
+          Asin bulutu: yalnızca kiracı yolunu yazın (kayıtta bulut adresi otomatik birleştirilir). LAN veya başka
           domain için «Özel tam URL».
         </p>
       </div>
@@ -1431,7 +1429,7 @@ export function Login({ onLogin }: LoginProps) {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'stretch', overflow: 'hidden', borderRadius: 10, border: `1px solid ${darkMode ? '#2A3A48' : '#D8DEE5'}` }}>
                         <span style={{ display: 'flex', alignItems: 'center', padding: '0 10px', fontSize: 9, fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: darkMode ? '#8A9AA8' : '#5A6B78', background: darkMode ? '#0C141C' : '#F3F5F7', borderRight: `1px solid ${darkMode ? '#2A3A48' : '#D8DEE5'}`, whiteSpace: 'nowrap' }}>
-                          api.retailex.app/
+                          Asin/
                         </span>
                         <input
                           type="text"
@@ -1916,7 +1914,7 @@ export function Login({ onLogin }: LoginProps) {
                       Fabrika ayarlarına dön
                     </h3>
                     <p className="text-sm leading-relaxed opacity-90 mb-4">
-                      Tüm yerel ayarlar silinecek; Windows RetailEX hizmetleri kaldırılacak; kurulum sihirbazı tekrar açılacak.
+                      Tüm yerel ayarlar silinecek; Windows Asin hizmetleri kaldırılacak; kurulum sihirbazı tekrar açılacak.
                       Veritabanı sunucunuzdaki veriler bu işlemle silinmez.
                     </p>
                     <label className="flex items-start gap-3 cursor-pointer text-sm">
@@ -1927,7 +1925,7 @@ export function Login({ onLogin }: LoginProps) {
                         onChange={(e) => setFactoryResetDeleteCRetailex(e.target.checked)}
                       />
                       <span>
-                        <span className="font-semibold">C:\RetailEX</span> klasörünü de sil (eski kurulum dosyaları; geri alınamaz)
+                        <span className="font-semibold">C:\AsinERP</span> klasörünü de sil (eski kurulum dosyaları; geri alınamaz)
                       </span>
                     </label>
                     <div className="flex gap-3 mt-6 justify-end">
@@ -2390,10 +2388,7 @@ export function Login({ onLogin }: LoginProps) {
                         {tenantPostgrestEntryMode === 'retailex_cloud' ? (
                           <>
                             Asin bulutu: yalnızca kiracı kodunu yazın (ör.{' '}
-                            <strong>ozbek</strong>). Hedef{' '}
-                            <span className="font-mono">
-                              {DEFAULT_SAAS_TENANT_POSTGREST_ORIGIN}/kiracı
-                            </span>
+                            <strong>ozbek</strong>). Bulut adresi kayıtta otomatik birleştirilir
                             . LAN Wi‑Fi / port 3002 bu modda kullanılmaz. Kaydettiğinizde kiracı
                             bağlantısı uygulanır; firma listesi yenilenir.
                           </>
@@ -2421,7 +2416,7 @@ export function Login({ onLogin }: LoginProps) {
                               PC adresi olarak <strong>192.168.x.x</strong> kullanın (cmd → ipconfig → Wi‑Fi IPv4).{' '}
                               <strong>172.x.x.x</strong> çoğu zaman WSL sanal ağıdır; telefondan erişilemez.
                             </li>
-                            <li>Merkez PC&apos;de <strong>RetailEX_PostgREST</strong> servisi çalışmalı; güvenlik duvarında TCP 3002 açık olmalı.</li>
+                            <li>Merkez PC&apos;de <strong>Asin PostgREST</strong> servisi çalışmalı; güvenlik duvarında TCP 3002 açık olmalı.</li>
                           </ul>
                         </div>
                       )}

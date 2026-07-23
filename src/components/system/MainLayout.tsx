@@ -184,7 +184,7 @@ function WsConnectionStatusDot() {
         ? 'Gerçek zamanlı sunucuya bağlanılıyor…'
         : IS_TAURI
           ? 'WebSocket yok — arka plan servisi veya kiracı central_ws_url yapılandırmasını kontrol edin'
-          : 'WebSocket bağlı değil — kiracı bağlantısı sonrası api.retailex.app/{kiracı}/ws denenir';
+          : 'WebSocket bağlı değil — kiracı bağlantısı sonrası bulut /{kiracı}/ws denenir';
 
   let boxClass =
     'w-4 h-4 sm:w-5 sm:h-5 rounded transition-colors flex-shrink-0 ';

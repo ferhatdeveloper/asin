@@ -266,7 +266,7 @@ impl Default for AppConfig {
             db_mode: "online".to_string(),
             local_db: "localhost:5432/retailex_local".to_string(),
             remote_db: "72.60.182.107:5432/retailex_demo".to_string(), // sync: config/remote-pg.defaults.json
-            connection_provider: default_connection_provider(),
+            connection_provider: "db".to_string(),
             remote_rest_url: default_remote_rest_url(),
             merkez_tenant_code: String::new(),
             hybrid_read_preference: "remote_first".to_string(),
@@ -320,7 +320,6 @@ pub fn exe_dir() -> PathBuf {
 }
 
 /// Taşınabilir (USB) mod: `ASIN_PORTABLE=1` / `RETAILEX_PORTABLE=1` veya exe yanında `portable.dat`.
-/// Portable çalıştırma: `volume.bind` (writer ile basılır) — bkz. `portable_bind`.
 pub fn is_portable_mode() -> bool {
     for key in ["ASIN_PORTABLE", "RETAILEX_PORTABLE"] {
         if let Ok(v) = std::env::var(key) {
@@ -334,14 +333,24 @@ pub fn is_portable_mode() -> bool {
     root.join("portable.dat").is_file() || root.join("AsinERP.portable").is_file()
 }
 
-/// Sabit kurulum: `C:\RetailEx` — portable: `{exe_dir}\data` (flash harfinden bağımsız).
+/// Sabit kurulum: `C:\AsinERP` — portable: `{exe_dir}\data` (flash harfinden bağımsız).
+/// Eski kurulumda `config.db` hâlâ `C:\RetailEX` / `C:\RetailEx` altındaysa onu kullanır.
 pub fn get_app_data_dir() -> PathBuf {
     if is_portable_mode() {
         let dir = exe_dir().join("data");
         let _ = std::fs::create_dir_all(&dir);
         dir
     } else {
-        let app_dir = PathBuf::from(r"C:\RetailEx");
+        let app_dir = PathBuf::from(r"C:\AsinERP");
+        if app_dir.join("config.db").exists() {
+            return app_dir;
+        }
+        for legacy in [r"C:\RetailEX", r"C:\RetailEx"] {
+            let p = PathBuf::from(legacy);
+            if p.join("config.db").exists() {
+                return p;
+            }
+        }
         if !app_dir.exists() {
             let _ = std::fs::create_dir_all(&app_dir);
         }

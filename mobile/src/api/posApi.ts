@@ -238,7 +238,7 @@ async function savePosSaleLive(
     opts?.campaignId && totals.headerDiscount > 0
       ? `Kampanya: ${opts.campaignName || opts.campaignId} (−${totals.headerDiscount})`
       : null;
-  const notes = ['RetailEX Mobile POS', campaignNote].filter(Boolean).join(' | ');
+  const notes = ['Asin Mobile POS', campaignNote].filter(Boolean).join(' | ');
 
   await pgQuery(
     `INSERT INTO ${sales} (
